@@ -1,0 +1,21 @@
+@host = localhost:8080
+
+// View Page
+# @name pageview
+GET http://{{host}}/api/page/view HTTP/1.1
+
+###
+
+
+// Post new Page
+# @name newpage
+POST http://{{host}}/api/page/new HTTP/1.1
+content-type: application/json
+    
+{
+    "email": "yangwawa0323@163.com",
+    "password": "123465789"
+}
+###
+
+

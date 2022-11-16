@@ -1,8 +1,6 @@
 package models
 
 import (
-	"log"
-
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -25,8 +23,6 @@ func (user *User) HashPassword(password string) error {
 }
 
 func (user *User) CheckPassword(providedPassword string) error {
-	log.Printf("password :%s  , providedPassword : %s \n", user.Password, providedPassword)
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(providedPassword))
-
 	return err
 }

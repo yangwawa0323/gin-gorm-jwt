@@ -6,7 +6,7 @@ POST http://{{host}}/api/token HTTP/1.1
 content-type: application/json
     
 {
-    "email": "mukesh@go.com",
+    "email": "yangwawa0323@163.com",
     "password": "123465789"
 }
 ###
