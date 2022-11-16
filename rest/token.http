@@ -1,0 +1,21 @@
+@host = localhost:8080
+
+// Generate JWT
+# @name login
+POST http://{{host}}/api/token HTTP/1.1
+content-type: application/json
+    
+{
+    "email": "mukesh@go.com",
+    "password": "123465789"
+}
+###
+
+
+@host = localhost:8080
+// Access a Secured API Endpoint
+GET http://{{host}}/api/secured/ping HTTP/1.1
+content-type: application/json
+authorization: {{login.response.body.token}}
+
+###
