@@ -11,6 +11,7 @@ import (
 func NewPage(ctx *gin.Context) {
 	var page models.Page
 	// TODO: should get user info and post database
+	// ctx.Header("Access-Control-Allow-Origin", "*")
 
 	if err := ctx.ShouldBindJSON(&page); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{

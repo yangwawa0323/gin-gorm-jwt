@@ -33,7 +33,8 @@ func PageRouter(base *gin.RouterGroup) {
 			})
 		})
 
-		page.POST("/new", middlewares.RateLimit(middlewares.POST_NEW_PAGE, 30*time.Second),
+		// IMPORTANT: CORS() should before the RateLimit()
+		page.POST("/new", middlewares.CORS(), middlewares.RateLimit(middlewares.POST_NEW_PAGE, 30*time.Second),
 			controllers.NewPage)
 	}
 

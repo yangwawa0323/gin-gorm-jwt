@@ -53,10 +53,9 @@ func RateLimit(limitType RATELIMIT_TYPE, duration time.Duration) gin.HandlerFunc
 		} else {
 			recent := activity.(*ClientActivity)
 			if recent.LatestPostTime.Add(duration).After(time.Now()) {
-				ctx.JSON(http.StatusBadRequest, gin.H{
+				ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 					"error": RateLimitErrorDetail(limitType),
 				})
-				ctx.Abort()
 				return
 			}
 			// After save the page reset the LatestPostTime

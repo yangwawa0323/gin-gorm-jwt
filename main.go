@@ -17,7 +17,7 @@ func main() {
 
 	config := cors.DefaultConfig()
 	// config.AllowOrigins = []string{"http://localhost:3000", "http://127.0.0.1:3000"}
-	config.AllowOrigins = []string{"", "http://google.com", "http://facebook.com"}
+	config.AllowOrigins = []string{"http://localhost:3000", "http://google.com", "http://facebook.com"}
 	// config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"*"}
 	// cors.New(config)
