@@ -34,8 +34,23 @@ func PageRouter(base *gin.RouterGroup) {
 		})
 
 		// IMPORTANT: CORS() should before the RateLimit()
-		page.POST("/new", middlewares.CORS(), middlewares.RateLimit(middlewares.POST_NEW_PAGE, 30*time.Second),
+		page.POST("/new", middlewares.CORS(),
+			middlewares.RateLimit(middlewares.POST_NEW_PAGE, 30*time.Second),
 			controllers.NewPage)
+
+		page.GET("/all", middlewares.CORS(), controllers.AllPages)
+
 	}
 
+}
+
+func UserRouter(base *gin.RouterGroup) {
+	user := base.Group("/user")
+	{
+		user.POST("/register", controllers.RegisterUser)
+		user.POST("/login", controllers.Login)
+		user.POST("/change-password", controllers.ChangePassword)
+		user.GET("/list/messages", controllers.ListMessages)
+		user.GET("/upload-avatar", controllers.UploadAvator)
+	}
 }

@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yangwawa0323/gin-gorm-jwt/auth"
-	"github.com/yangwawa0323/gin-gorm-jwt/database"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
+	"github.com/yangwawa0323/gin-gorm-jwt/services"
 )
 
 type TokenRequest struct {
@@ -26,7 +26,9 @@ func GenerateToken(ctx *gin.Context) {
 		return
 	}
 
-	record := database.Instance.Where("email = ?", request.Email).First(&user)
+	dbsvc := services.NewDBService()
+
+	record := dbsvc.DB.Where("email = ?", request.Email).First(&user)
 	if record.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": record.Error.Error()},
