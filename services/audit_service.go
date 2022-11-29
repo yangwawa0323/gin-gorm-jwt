@@ -17,7 +17,7 @@ func NewAuditService() *auditService {
 	}
 }
 
-func (adtsvc *auditService) Save(ctn string) error {
+func (adtsvc *auditService) New(ctn string) error {
 	adtsvc.Audit = &models.AuditLog{
 		Content:   ctn,
 		Timestamp: time.Now(),
@@ -25,7 +25,11 @@ func (adtsvc *auditService) Save(ctn string) error {
 	return adtsvc.DB.Create(adtsvc.Audit).Error
 }
 
+// func (adtsvc *auditService) Save() error {
+// 	return adtsvc.DB.Save(adtsvc.Audit).Error
+// }
+
 func AuditSave(ctn string) error {
 	adtsvc := NewAuditService()
-	return adtsvc.Save(ctn)
+	return adtsvc.New(ctn)
 }

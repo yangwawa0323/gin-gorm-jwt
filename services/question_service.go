@@ -16,6 +16,10 @@ func NewQuestionService(qst *models.Question) *questionService {
 	}
 }
 
+func (qstsvc *questionService) New(question *models.Question) error {
+	return errorDebug(qstsvc.DB.Create(question).Error)
+}
+
 func (qstsvc *questionService) Save() error {
 	return qstsvc.DB.Save(qstsvc.Question).Error
 }

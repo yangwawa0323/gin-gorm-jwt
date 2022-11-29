@@ -18,6 +18,11 @@ func NewPageService(page *models.Page) *pageService {
 	}
 }
 
+func (pgsvc *pageService) New(page *models.Page) error {
+	return errorDebug(pgsvc.DB.Create(page).Error)
+
+}
+
 func (pgsvc *pageService) Save() error {
 	if pgsvc.Page != nil {
 		return pgsvc.DB.Save(pgsvc.Page).Error

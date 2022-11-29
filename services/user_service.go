@@ -6,6 +6,7 @@ import (
 
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	"gorm.io/gorm"
 )
 
 var errorDebug = utils.ErrorDebug
@@ -33,23 +34,17 @@ func (us *userService) SendMessage(rcpID int64, msg *models.Message) error {
 
 	msgsvc := NewMessageService(msg)
 	return errorDebug(msgsvc.Save())
-
-	// return errors.New("not implemented yet")
 }
 
-func (us *userService) ReadMessage(msgID int64) error {
+// Not valid the gorm SQL.
+func (us *userService) ReadMessage(msgID int64) (*models.Message, error) {
 	var msg *models.Message
-	var err error
 	msgsvc := NewMessageService(msg)
-	if msg, err = msgsvc.FindMessageByID(msgID); err != nil {
-		return err
-	}
-
-	msg.Recipient = us.User
-	msg.MarkReaded()
-	msgsvc.Message = msg
-	return errorDebug(msgsvc.Save())
-
+	result := msgsvc.DB.Model(msg).
+		Where("ID = ?", msgID).
+		Update("status", gorm.Expr("status | ?", models.Readed)).
+		First(msg)
+	return msg, errorDebug(result.Error)
 }
 
 /**
@@ -76,15 +71,27 @@ func (us *userService) AnswerQuestion(qstID int64, content string) error {
 /**
 * user privilege functions
  */
-func (us *userService) Grant(priv models.Privilege) error {
+func (us *userService) Grant(userID int64, priv models.Privilege) error {
 
-	us.User.Privilege = us.User.Privilege | priv
-	if utils.RequireAudit() {
-		// TODO
+	if utils.RequireAudit() && !us.HasPrivilege(models.Grant) {
+		var warning = fmt.Sprintf("User [%d:%s] has not [%s] prvilege to grant [%s] to user id [%d]",
+			us.User.ID, us.User.Username, models.LiteralPrivilege[int64(models.Grant)],
+			models.LiteralPrivilege[int64(priv)], userID)
+		AuditSave(warning)
+		return errors.New(warning)
 	}
-	return errorDebug(us.Save())
+
+	grantTo, err := us.FindUserByID(userID)
+	us.User = grantTo
+	if errorDebug(err) != nil {
+		return err
+	}
+	// use bit OR grant the new privilege
+	us.User.Privilege = us.User.Privilege | priv
+	return errorDebug(us.Save()) // change other user info
 }
 
+// Not finished.
 func (us *userService) ChangePassword(pwd string) error {
 
 	err := us.User.HashPassword(pwd)
@@ -103,7 +110,7 @@ func (us *userService) ChangePassword(pwd string) error {
 				us.User.Username, pwd[2:len(pwd)-2]), // Save partial password string
 		)
 	}
-	err = us.Save()
+	err = us.Save() // save password themself.
 	return errorDebug(err)
 }
 
@@ -111,6 +118,7 @@ func (us *userService) SendNotificationMail() error {
 	return errors.New("not implemented yet")
 }
 
+// Done.
 func (us *userService) HasPrivilege(priv models.Privilege) bool {
 	return us.User.Privilege&priv == priv
 }
@@ -119,7 +127,7 @@ func (us *userService) HasPrivilege(priv models.Privilege) bool {
 func (us *userService) ChangeUserClass(userID int64, userCls models.UserClass) error {
 	if !us.HasPrivilege(models.Admin) {
 		var warning = fmt.Sprintf("User [%d:%s] change user id [%d] to %s has not admin privilege",
-			us.User.ID, us.User.Username, userID)
+			us.User.ID, us.User.Username, userID, models.LiteralUserClass[int64(userCls)])
 		AuditSave(warning)
 		return errors.New(warning)
 	}
@@ -129,16 +137,19 @@ func (us *userService) ChangeUserClass(userID int64, userCls models.UserClass) e
 /**
 * Base Database Operation
  */
+// Done.
 func (us *userService) FindUserByID(userID int64) (*models.User, error) {
 	var user *models.User
 	result := us.DB.First(user, userID)
 	return user, errorDebug(result.Error)
 }
 
+// Done
+
+func (us *userService) New(user *models.User) error {
+	return errorDebug(us.DB.Create(user).Error)
+}
+
 func (us *userService) Save() error {
-	if us.User != nil {
-		return errorDebug(us.DB.Save(us.User).Error)
-	} else {
-		return errors.New("user service has not set User field up")
-	}
+	return errorDebug(us.DB.Save(us.User).Error)
 }

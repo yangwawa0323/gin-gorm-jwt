@@ -25,8 +25,9 @@ const (
 	Downloadable
 	Uploadable
 	ChangeUserClass
+	Grant
 	Admin Privilege = Readable | Writeable | Deleteable |
-		Downloadable | Uploadable | ChangeUserClass
+		Downloadable | Uploadable | ChangeUserClass | Grant
 )
 
 var LiteralPrivilege = map[int64]string{
@@ -36,6 +37,7 @@ var LiteralPrivilege = map[int64]string{
 	int64(Downloadable):    "downloadable",
 	int64(Uploadable):      "uploadable",
 	int64(ChangeUserClass): "change user class",
+	int64(Grant):           "grant privilege",
 	int64(Admin):           "administration",
 }
 
@@ -46,6 +48,12 @@ const (
 	MonthlySubscription
 	AnnualSubscription
 )
+
+var LiteralUserClass = map[int64]string{
+	int64(Guest):               "guest",
+	int64(MonthlySubscription): "monthly subscription user",
+	int64(AnnualSubscription):  "annual subscription user",
+}
 
 type User struct {
 	gorm.Model

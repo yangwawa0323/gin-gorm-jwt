@@ -28,7 +28,7 @@ func NewPage(ctx *gin.Context) {
 	pgsvc := services.NewPageService(page)
 	// pgsvc.Page = &page
 	// TODO:
-	if err := pgsvc.Save(); err != nil {
+	if err := pgsvc.New(page); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})

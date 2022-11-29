@@ -43,7 +43,17 @@ func (dbsvc *dbService) Connect(connectionString string) (*dbService, error) {
 }
 
 func (dbsvc *dbService) Migrate() error {
-	if err := dbsvc.DB.AutoMigrate(&models.User{}, &models.Page{}); err != nil {
+	if err := dbsvc.DB.AutoMigrate(
+		// account models
+		&models.User{},
+		// page models
+		&models.Page{},
+		// course models
+		&models.Tag{},
+		&models.CourseCategory{},
+		&models.Course{},
+		&models.Class{},
+	); err != nil {
 		return err
 	}
 	log.Println("Database Migration completed!")

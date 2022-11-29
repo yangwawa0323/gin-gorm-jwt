@@ -28,10 +28,10 @@ func RegisterUser(ctx *gin.Context) {
 
 	usersvc := services.NewUserService(&user)
 	// usersvc.User = &user
-	record := usersvc.Save()
-	if record != nil {
+	result := usersvc.New(&user)
+	if result != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": record.Error(),
+			"error": result.Error(),
 		})
 		ctx.Abort()
 		return
