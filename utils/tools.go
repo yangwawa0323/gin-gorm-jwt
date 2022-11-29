@@ -1,6 +1,12 @@
 package utils
 
-import "log"
+import (
+	"log"
+	"os"
+	"strconv"
+
+	"github.com/joho/godotenv"
+)
 
 func ErrorDebug(err error) error {
 	if err != nil {
@@ -9,3 +15,20 @@ func ErrorDebug(err error) error {
 	}
 	return nil
 }
+
+func LoadDotEnv() error {
+	err := godotenv.Load()
+	if err != nil {
+		log.Panic("Error loading .env file")
+	}
+	return nil
+}
+
+func RequireAudit() bool {
+	var audit bool = false // By default
+	LoadDotEnv()
+	audit, _ = strconv.ParseBool(os.Getenv("AUDIT_LOG"))
+	return audit
+}
+
+

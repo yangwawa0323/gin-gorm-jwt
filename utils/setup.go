@@ -5,22 +5,14 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 func isNotSetOrEmpty(value string) bool {
-	if strings.Compare("", value) == 0 {
-		return true
-	}
-	return false
+	return strings.Compare("", value) == 0
 }
 
 func GetConnectURI() string {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	LoadDotEnv()
 
 	dbuser := os.Getenv("DBUSER")
 	dbpass := os.Getenv("DBPASS")

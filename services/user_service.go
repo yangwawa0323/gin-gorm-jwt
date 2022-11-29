@@ -77,7 +77,11 @@ func (us *userService) AnswerQuestion(qstID int64, content string) error {
 * user privilege functions
  */
 func (us *userService) Grant(priv models.Privilege) error {
+
 	us.User.Privilege = us.User.Privilege | priv
+	if utils.RequireAudit() {
+		// TODO
+	}
 	return errorDebug(us.Save())
 }
 
@@ -93,6 +97,12 @@ func (us *userService) ChangePassword(pwd string) error {
 		return err
 	}
 
+	if utils.RequireAudit() {
+		AuditSave(
+			fmt.Sprintf("User %s changed password [**%s**]",
+				us.User.Username, pwd[2:len(pwd)-2]), // Save partial password string
+		)
+	}
 	err = us.Save()
 	return errorDebug(err)
 }
@@ -105,11 +115,13 @@ func (us *userService) HasPrivilege(priv models.Privilege) bool {
 	return us.User.Privilege&priv == priv
 }
 
-func (us *userService) ChangeUserClass(userCls models.UserClass) error {
-	us.User.UserClass = userCls
-	err := us.Save()
-	if err := errorDebug(err); err != nil {
-		return err
+// Admin change the specified uid User's UserClass attribute
+func (us *userService) ChangeUserClass(userID int64, userCls models.UserClass) error {
+	if !us.HasPrivilege(models.Admin) {
+		var warning = fmt.Sprintf("User [%d:%s] change user id [%d] to %s has not admin privilege",
+			us.User.ID, us.User.Username, userID)
+		AuditSave(warning)
+		return errors.New(warning)
 	}
 	return nil
 }

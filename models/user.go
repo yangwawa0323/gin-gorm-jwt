@@ -21,9 +21,23 @@ type Privilege int64
 const (
 	Readable Privilege = 1 << iota
 	Writeable
+	Deleteable
 	Downloadable
 	Uploadable
+	ChangeUserClass
+	Admin Privilege = Readable | Writeable | Deleteable |
+		Downloadable | Uploadable | ChangeUserClass
 )
+
+var LiteralPrivilege = map[int64]string{
+	int64(Readable):        "readable",
+	int64(Writeable):       "writeable",
+	int64(Deleteable):      "deleteable",
+	int64(Downloadable):    "downloadable",
+	int64(Uploadable):      "uploadable",
+	int64(ChangeUserClass): "change user class",
+	int64(Admin):           "administration",
+}
 
 type UserClass int64
 

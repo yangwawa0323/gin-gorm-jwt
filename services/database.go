@@ -11,7 +11,7 @@ import (
 
 // Here, we are defining an instance of the database.
 // This variable will be used across the entire application to communicate with the database.
-var Instance *gorm.DB
+// var Instance *gorm.DB
 var dbError error
 
 type dbService struct {
