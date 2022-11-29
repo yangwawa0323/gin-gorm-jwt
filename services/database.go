@@ -50,7 +50,7 @@ func (dbsvc *dbService) Migrate() error {
 		&models.Page{},
 		// course models
 		&models.Tag{},
-		&models.CourseCategory{},
+		// &models.CourseCategory{},
 		&models.Course{},
 		&models.Class{},
 	); err != nil {

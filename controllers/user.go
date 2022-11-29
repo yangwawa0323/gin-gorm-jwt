@@ -28,6 +28,8 @@ func RegisterUser(ctx *gin.Context) {
 
 	usersvc := services.NewUserService(&user)
 	// usersvc.User = &user
+	user.UserClass = models.Guest
+
 	result := usersvc.New(&user)
 	if result != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -36,10 +38,21 @@ func RegisterUser(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+
+	secret, err := user.GenerateActivateMailString()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	// TODO : send a activate mail
+
 	ctx.JSON(http.StatusCreated, gin.H{
-		"userId":   user.ID,
-		"email":    user.Email,
-		"username": user.Username,
+		"userId":             user.ID,
+		"email":              user.Email,
+		"username":           user.Username,
+		"active_mail_string": secret,
 	})
 }
 

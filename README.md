@@ -41,4 +41,34 @@ C: controller
                   Model  -----> Service -----> Storage
                     |
                     |
-                  Controller ----> User 
+                  Controller ----> User
+
+
+## Mail box setup
+During the user register phase, the user will receive a mail to activate the account.
+You need set .env file to specified the `mailbox`, `host` and `port`, may be including the `password` for convenient purpose.  
+
+```text
+ADMIN_EMAIL=yangwawa0323@163.com
+
+MAILBOX_HOST=smtp.163.com
+
+MAILBOX_PORT=25
+
+#ADMIN_MAILBOX_PASSWORD=dasiyebushuo
+```
+> Note: ADMIN_MAILBOX_PASSWORD is plain text in the dotenv configuration file. THIS IS UNSAFE TOTALLY AT ALL. you can comment it, and at the runtime prompt input your admin mail box password. The following is the example demo：
+
+```golang
+adminMailboxPassword = os.Getenv("ADMIN_MAILBOX_PASSWORD")
+	if strings.Compare(adminMailboxPassword, "") == 0 {
+		fmt.Printf("\nEnter admin mail box password\n\n")
+		reader := bufio.NewReader(os.Stdin)
+		password, _, err := reader.ReadLine()
+		if err != nil {
+			log.Panic(err)
+			return
+		}
+		adminMailboxPassword = string(password)
+	}
+```

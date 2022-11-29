@@ -9,3 +9,18 @@ content-type: application/json
     "email": "yangwawa0323@163.com",
     "password": "123465789"
 }
+
+###
+
+## Please commit two time to detect the unique username and mail
+POST http://{{host}}/api/user/register HTTP/1.1
+content-type: application/json
+    
+{
+    "name": "Wang yin qi2",
+    "username": "wyq750323",
+    "email": "wangyq750323@163.com",
+    "password": "123465789",
+    "user_class": 1
+}
+###

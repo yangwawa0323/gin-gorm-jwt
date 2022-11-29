@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -57,12 +58,12 @@ var LiteralUserClass = map[int64]string{
 
 type User struct {
 	gorm.Model
-	Name              string     `json:"name"`
-	Username          string     `json:"username" gorm:"unique"`
+	Name              string     `json:"name" gorm:"column:name;type:varchar(100)"`
+	Username          string     `json:"username" gorm:"not null;type:varchar(100)"`
 	Email             string     `json:"email" gorm:"unique"`
-	Password          string     `json:"password"`
-	Phone             string     `json:"phone"`
-	IdentityNumber    string     `json:"identity_number"`
+	Password          string     `json:"password" gorm:"type:varchar(255)"`
+	Phone             string     `json:"phone" gorm:"type:char;size:11"`
+	IdentityNumber    string     `json:"identity_number" gorm:"type:char;size:18"`
 	Privilege         Privilege  `json:"privilege" gorm:"type:tinyint"`
 	Gender            Gender     `json:"gender" gorm:"type:tinyint"`
 	UserClass         UserClass  `json:"user_class" gorm:"type:tinyint"`
@@ -84,8 +85,34 @@ func (user *User) CheckPassword(providedPassword string) error {
 	return err
 }
 
+// Should move to controller/user.go
 func (user *User) RefreshToken(ctx *gin.Context) (token []byte, err error) {
 	token = []byte("")
 	err = errors.New("not implemented yet")
 	return
+}
+
+func (user *User) Secret() (secret []byte) {
+	secret = []byte(fmt.Sprintf("%s@51cloudclass@%s", user.Email, user.Password))
+	return
+}
+
+func (user *User) GenerateActivateMailString() ([]byte, error) {
+	activeString, err := bcrypt.GenerateFromPassword(
+		user.Secret(),
+		bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("error to generate activate mail string")
+	}
+	return activeString, nil
+}
+
+func (user *User) IsActivateMailStringValid(activeString []byte) bool {
+	err := bcrypt.CompareHashAndPassword(activeString, user.Secret())
+	return err == nil
+}
+
+func (user *User) GenerateActivateMailContent() ([]byte, error) {
+	// template.New()
+	return nil, errors.New("not implemented yet")
 }

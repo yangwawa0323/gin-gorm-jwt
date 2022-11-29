@@ -16,6 +16,10 @@ func ErrorDebug(err error) error {
 	return nil
 }
 
+func Debug(message string) {
+	log.Printf("[DEBUG]: %s", message)
+}
+
 func LoadDotEnv() error {
 	err := godotenv.Load()
 	if err != nil {
@@ -30,5 +34,3 @@ func RequireAudit() bool {
 	audit, _ = strconv.ParseBool(os.Getenv("AUDIT_LOG"))
 	return audit
 }
-
-
