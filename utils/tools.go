@@ -3,6 +3,7 @@ package utils
 import (
 	"log"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -24,9 +25,15 @@ func ErrorDebug(err error, message ...string) error {
 	return nil
 }
 
-func Debug(message string) {
+func Debug(messages ...string) {
 	green := color.New(color.FgGreen).SprintFunc()
-	log.Printf("[DEBUG]: %s", green(message))
+	pc, file, line, ok := runtime.Caller(1)
+	if ok {
+		log.Printf("\n[DEBUG]: Called from [%s], line [%d], func: [%v]\n%s\n",
+			file, line, runtime.FuncForPC(pc).Name(),
+			green(strings.Join(messages, ", ")),
+		)
+	}
 }
 
 func LoadDotEnv() error {

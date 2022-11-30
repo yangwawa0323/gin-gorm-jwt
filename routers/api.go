@@ -14,11 +14,13 @@ func ApiRouter(router *gin.Engine) {
 	api := router.Group("/api")
 	{
 		api.POST("/token", controllers.GenerateToken)
-		api.POST("/user/register", controllers.RegisterUser)
+		// api.POST("/user/register", controllers.RegisterUser)
+		// api/user/%d/activate-by-email?token=
 		secured := api.Group("/secured").Use(middlewares.Auth())
 		{
 			secured.GET("/ping", controllers.Ping)
 		}
+		UserRouter(api)
 		PageRouter(api)
 	}
 
@@ -48,6 +50,8 @@ func UserRouter(base *gin.RouterGroup) {
 	user := base.Group("/user")
 	{
 		user.POST("/register", controllers.RegisterUser)
+		// api/user/%d/activate-by-email?token=
+		user.GET("/:user_id/activate-by-email", controllers.ConfirmMailActivate)
 		user.POST("/login", controllers.Login)
 		user.POST("/change-password", controllers.ChangePassword)
 		user.GET("/list/messages", controllers.ListMessages)

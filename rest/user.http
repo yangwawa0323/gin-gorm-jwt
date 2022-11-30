@@ -23,4 +23,11 @@ content-type: application/json
     "password": "123465789",
     "user_class": 1
 }
+
 ###
+
+GET http://{{host}}/api/user/25/activate-by-email?token=%242a%2410%24iuPizsiVSpehR6rmMCjt2uwFgA9kEUQWcwhYT6iBHTn3.r411fa7O
+
+###
+
+GET http://localhost:8080/api/user/30/activate-by-email?token=%242a%2410%24je4qEzNg%2FF%2Fl83wpYuNPDufsuNVo9OtePfZuJPEgeQYmbwlOf8xrC

@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
@@ -139,15 +140,22 @@ func (us *userService) ChangeUserClass(userID int64, userCls models.UserClass) e
  */
 // Done.
 func (us *userService) FindUserByID(userID int64) (*models.User, error) {
-	var user *models.User
-	result := us.DB.First(user, userID)
-	return user, errorDebug(result.Error)
+	var user models.User
+	result := us.DB.First(&user, userID)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		errorDebug(result.Error, "No found the user")
+	}
+	return &user, nil
 }
 
 // Done
 
 func (us *userService) New(user *models.User) error {
-	return errorDebug(us.DB.Create(user).Error)
+	result := us.DB.Create(user)
+	if result.RowsAffected > 0 {
+		utils.Debug(strconv.FormatUint(uint64(user.ID), 10))
+	}
+	return errorDebug(result.Error)
 }
 
 func (us *userService) Save() error {

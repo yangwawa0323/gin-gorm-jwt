@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
@@ -118,13 +117,13 @@ func (user *User) GenerateActivateMailBody() (string, error) {
 	}
 
 	var buf *bytes.Buffer = new(bytes.Buffer)
-	var templateData map[string]string = make(map[string]string)
 	// TODO: hard code here
 	srvHost := os.Getenv("SERVER_URL")
-	templateData["url"] = strings.Join([]string{srvHost,
-		"api/user/activate-by-email?token=",
-	}, "/")
-	templateData["token"] = url.QueryEscape(string(activateString))
+	url :=
+		fmt.Sprintf("%s/api/user/%d/activate-by-email?token=%s",
+			srvHost, user.ID,
+			url.QueryEscape(string(activateString)),
+		)
 
 	tmpl, err := template.ParseFiles(mailTemplateFile)
 	if err != nil {
@@ -132,7 +131,7 @@ func (user *User) GenerateActivateMailBody() (string, error) {
 		return "", err
 	}
 
-	if err := tmpl.Execute(buf, templateData); err != nil {
+	if err := tmpl.Execute(buf, url); err != nil {
 		errorDebug(err,
 			"\n[DEBUG]can not execute applies a parsed template to specified data object\n\n")
 		return "", err
@@ -140,7 +139,7 @@ func (user *User) GenerateActivateMailBody() (string, error) {
 	return buf.String(), nil
 }
 
-func (user *User) IsActivateMailStringValid(activeString []byte) bool {
-	err := bcrypt.CompareHashAndPassword(activeString, user.Secret())
+func (user *User) IsActivateMailStringValid(activateString []byte) bool {
+	err := bcrypt.CompareHashAndPassword(activateString, user.Secret())
 	return err == nil
 }
