@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	"gorm.io/gorm"
 )
 
 var debug = utils.Debug
@@ -108,7 +110,6 @@ func ConfirmMailActivate(ctx *gin.Context) {
 	if ok && err == nil {
 		usersvc := services.NewUserService(&svcUser)
 		user, dbErr := usersvc.FindUserByID(int64(userID))
-		secret := user.Secret()
 		unescapedSecret, tokenErr := url.QueryUnescape(mailSecret.Token)
 
 		if dbErr == nil && tokenErr == nil &&
@@ -136,14 +137,22 @@ func ChangePassword(ctx *gin.Context) {
 }
 
 func Login(ctx *gin.Context) {
+	var user models.User = models.User{}
+	if err := ctx.ShouldBind(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, &user)
+	} else {
+		usersvc := services.NewUserService(&user)
+		result := usersvc.DB.Where("name = ? and password = ?",
+			usersvc.User.Name,
+			usersvc.User.Password).First(&user)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": "user not found",
+			})
+		}
+	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "user login",
-	})
-}
-
-func RefreshToken(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "user refresh token",
 	})
 }
 

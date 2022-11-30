@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +44,8 @@ func GenerateToken(ctx *gin.Context) {
 		return
 	}
 
-	log.Printf("email : %s, password: %s \n", user.Email, user.Password)
+	// debug(fmt.Sprintf("email : %s, password: %s \n", user.Email, user.Password))
+
 	tokenString, err := auth.GenerateJWT(user.Email, user.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -57,5 +57,13 @@ func GenerateToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": tokenString,
 	})
+
+}
+
+func VerifyToken(ctx *gin.Context) {
+
+}
+
+func RefreshToken(ctx *gin.Context) {
 
 }
