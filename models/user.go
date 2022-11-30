@@ -1,13 +1,23 @@
 package models
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"html/template"
+	"net/url"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yangwawa0323/gin-gorm-jwt/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+const mailTemplateFile = "./templates/activate-mail.html"
+
+var errorDebug = utils.ErrorDebug
 
 type Gender int64
 
@@ -97,22 +107,40 @@ func (user *User) Secret() (secret []byte) {
 	return
 }
 
-func (user *User) GenerateActivateMailString() ([]byte, error) {
-	activeString, err := bcrypt.GenerateFromPassword(
+func (user *User) GenerateActivateMailBody() (string, error) {
+
+	activateString, err := bcrypt.GenerateFromPassword(
 		user.Secret(),
 		bcrypt.DefaultCost)
+
 	if err != nil {
-		return nil, errors.New("error to generate activate mail string")
+		return "", errors.New("error to generate activate mail string")
 	}
-	return activeString, nil
+
+	var buf *bytes.Buffer = new(bytes.Buffer)
+	var templateData map[string]string = make(map[string]string)
+	// TODO: hard code here
+	srvHost := os.Getenv("SERVER_URL")
+	templateData["url"] = strings.Join([]string{srvHost,
+		"api/user/activate-by-email?token=",
+	}, "/")
+	templateData["token"] = url.QueryEscape(string(activateString))
+
+	tmpl, err := template.ParseFiles(mailTemplateFile)
+	if err != nil {
+		errorDebug(err, "\n[DEBUG]can not parse the template file")
+		return "", err
+	}
+
+	if err := tmpl.Execute(buf, templateData); err != nil {
+		errorDebug(err,
+			"\n[DEBUG]can not execute applies a parsed template to specified data object\n\n")
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 func (user *User) IsActivateMailStringValid(activeString []byte) bool {
 	err := bcrypt.CompareHashAndPassword(activeString, user.Secret())
 	return err == nil
-}
-
-func (user *User) GenerateActivateMailContent() ([]byte, error) {
-	// template.New()
-	return nil, errors.New("not implemented yet")
 }

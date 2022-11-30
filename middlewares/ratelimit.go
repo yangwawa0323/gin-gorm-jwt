@@ -19,7 +19,7 @@ type ClientActivity struct {
 	User           string         `json:"user"`
 	RemoteAddr     string         `json:"remote"`
 	LatestPostTime time.Time      `json:"latestpost"`
-	Type           RATELIMIT_TYPE `json:-`
+	Type           RATELIMIT_TYPE `json:"type"`
 }
 
 var Cache = cache.New(5*time.Minute, 5*time.Minute)

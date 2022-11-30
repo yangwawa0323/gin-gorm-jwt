@@ -4,20 +4,29 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
-func ErrorDebug(err error) error {
+func ErrorDebug(err error, message ...string) error {
+
+	red := color.New(color.FgRed).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
+
 	if err != nil {
-		log.Printf("[DEBUG]: %s", err.Error())
+		log.Printf("[DEBUG]: %s, error : %s",
+			yellow(strings.Join(message, " ")),
+			red(err.Error()))
 		return err
 	}
 	return nil
 }
 
 func Debug(message string) {
-	log.Printf("[DEBUG]: %s", message)
+	green := color.New(color.FgGreen).SprintFunc()
+	log.Printf("[DEBUG]: %s", green(message))
 }
 
 func LoadDotEnv() error {

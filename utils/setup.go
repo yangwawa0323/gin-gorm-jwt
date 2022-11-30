@@ -1,8 +1,8 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
@@ -23,7 +23,7 @@ func GetConnectURI() string {
 	if isNotSetOrEmpty(dbuser) || isNotSetOrEmpty(dbpass) ||
 		isNotSetOrEmpty(dbhost) || isNotSetOrEmpty(dbport) ||
 		isNotSetOrEmpty(dbname) {
-		log.Fatal("Please set .env file to correct.")
+		ErrorDebug(errors.New("Please set .env file to correct."))
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",

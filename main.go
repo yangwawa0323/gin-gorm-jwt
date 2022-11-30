@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/routers"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
+	"github.com/yangwawa0323/gin-gorm-jwt/utils"
 )
 
 func main() {
@@ -13,9 +13,9 @@ func main() {
 	dbsvc := services.NewDBService()
 	dbsvc.Migrate()
 
-	router := initRouter()
+	utils.LoadDotEnv() // Load the dotenv configuration
 
-	models.SendMail_gomailV2()
+	router := initRouter()
 
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://localhost:8000", "http://localhost:3000", "http://google.com", "http://facebook.com"}

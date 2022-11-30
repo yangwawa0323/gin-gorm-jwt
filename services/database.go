@@ -35,7 +35,7 @@ func NewDBService() *dbService {
 func (dbsvc *dbService) Connect(connectionString string) (*dbService, error) {
 	dbsvc.DB, dbError = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if dbError != nil {
-		log.Fatal(dbError)
+		errorDebug(dbError)
 		return nil, dbError
 	}
 	log.Println("Connected to database")
