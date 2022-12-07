@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,6 +16,9 @@ import (
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
 )
+
+//go:embed assets/*.ico
+var embeddedFiles embed.FS
 
 var errorDebug = utils.ErrorDebug
 var debug = utils.Debug
@@ -44,6 +48,13 @@ func main() {
 
 func initRouter() *gin.Engine {
 	router := gin.Default()
+
+	// Favicon
+	favFS := &routers.FavFS{
+		FS:     &embeddedFiles,
+		Engine: router,
+	}
+	routers.FavFSRouter(favFS)
 	// Testing URL
 	routers.TestUrl(router)
 	// functional api
