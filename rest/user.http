@@ -1,6 +1,6 @@
 @host = localhost:8080
 // Register User
-POST http://{{host}}/api/user/register HTTP/1.1
+POST https://{{host}}/api/user/register HTTP/1.1
 content-type: application/json
     
 {
@@ -13,7 +13,7 @@ content-type: application/json
 ###
 
 ## Please commit two time to detect the unique username and mail
-POST http://{{host}}/api/user/register HTTP/1.1
+POST https://{{host}}/api/user/register HTTP/1.1
 content-type: application/json
     
 {
@@ -26,8 +26,8 @@ content-type: application/json
 
 ###
 
-GET http://{{host}}/api/user/25/activate-by-email?token=%242a%2410%24iuPizsiVSpehR6rmMCjt2uwFgA9kEUQWcwhYT6iBHTn3.r411fa7O
+GET https://{{host}}/api/user/25/activate-by-email?token=%242a%2410%24iuPizsiVSpehR6rmMCjt2uwFgA9kEUQWcwhYT6iBHTn3.r411fa7O
 
 ###
 
-GET http://localhost:8080/api/user/30/activate-by-email?token=%242a%2410%24je4qEzNg%2FF%2Fl83wpYuNPDufsuNVo9OtePfZuJPEgeQYmbwlOf8xrC
+GET https://localhost:8080/api/user/30/activate-by-email?token=%242a%2410%24je4qEzNg%2FF%2Fl83wpYuNPDufsuNVo9OtePfZuJPEgeQYmbwlOf8xrC

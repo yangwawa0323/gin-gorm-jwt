@@ -46,7 +46,7 @@ func GenerateToken(ctx *gin.Context) {
 
 	// debug(fmt.Sprintf("email : %s, password: %s \n", user.Email, user.Password))
 
-	tokenString, err := auth.GenerateJWT(user.Email, user.Username)
+	tokenString, err := auth.GenerateJWT(&user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

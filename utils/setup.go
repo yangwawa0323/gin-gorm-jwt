@@ -122,7 +122,7 @@ func InitConfig() *InitYamlConfig {
 		panic("cannot parse configuration")
 	}
 
-	Debug(fmt.Sprintf("%#v", config))
+	// Debug(fmt.Sprintf("%#v", config))
 	return config
 	// for k, v := range data {
 	// }

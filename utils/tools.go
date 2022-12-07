@@ -13,8 +13,8 @@ import (
 
 func ErrorDebug(err error, message ...string) error {
 
-	red := color.New(color.FgRed).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
+	red := color.New(color.FgHiRed).SprintFunc()
+	yellow := color.New(color.FgHiYellow).SprintFunc()
 
 	if err != nil {
 		log.Printf("[DEBUG]: %s, error : %s",
@@ -26,7 +26,7 @@ func ErrorDebug(err error, message ...string) error {
 }
 
 func Debug(messages ...string) {
-	green := color.New(color.FgGreen).SprintFunc()
+	green := color.New(color.FgHiGreen).SprintFunc()
 	pc, file, line, ok := runtime.Caller(1)
 	if ok {
 		log.Printf("\n[DEBUG]: Called from [%s], line [%d], func: [%v]\n%s\n",

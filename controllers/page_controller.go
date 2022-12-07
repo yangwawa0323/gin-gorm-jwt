@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yangwawa0323/gin-gorm-jwt/auth"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
 )
@@ -51,4 +54,17 @@ func AllPages(ctx *gin.Context) {
 	dbsvc.DB.Where("content is not null").Find(&pages)
 
 	ctx.PureJSON(http.StatusOK, pages)
+}
+
+func NotImplemented(ctx *gin.Context) {
+	ctx.Status(200)
+	user_id, err := auth.ExtractTokenUserID(ctx)
+	if err != nil {
+		debug(err.Error())
+	}
+
+	message := "<h1>Not implemented yet</h1>"
+	message += fmt.Sprintf("<h4>welcome %d</h4>", user_id)
+	message += fmt.Sprintf("<span>%s</span>", time.Now().Format("2006-01-02 15:04:05"))
+	ctx.Writer.WriteString(message)
 }

@@ -75,3 +75,8 @@ adminMailboxPassword = os.Getenv("ADMIN_MAILBOX_PASSWORD")
 
 ## Add Yaml config file
 Even we have the conf/app.yaml configration file , it only for golang server. For frontend the .env still required.
+
+
+## Embeded favicon.ico
+use go embedded the favicon.ico resource into the go built-in execute file.
+put the favicon to `assets/favicon.ico`

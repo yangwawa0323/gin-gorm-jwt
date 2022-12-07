@@ -41,6 +41,15 @@ func PageRouter(base *gin.RouterGroup) {
 			controllers.NewPage)
 
 		page.GET("/all", middlewares.CORS(), controllers.AllPages)
+		page.PUT("/update/:page_id", controllers.NotImplemented)
+		page.DELETE("/delete/:page_id", controllers.NotImplemented)
+
+		page.GET("/add-favorite/:page_id", controllers.NotImplemented)
+		page.GET("/revoke-favorite/:page_id", controllers.NotImplemented)
+
+		page.GET("/relative-pages", controllers.NotImplemented)
+
+		page.POST("/add-comment/:pageID", controllers.NotImplemented)
 
 	}
 
@@ -53,8 +62,22 @@ func UserRouter(base *gin.RouterGroup) {
 		// api/user/%d/activate-by-email?token=
 		user.GET("/:user_id/activate-by-email", controllers.ConfirmMailActivate)
 		user.POST("/login", controllers.Login)
+		user.PUT("/disable/:user_id")
+
 		user.POST("/change-password", controllers.ChangePassword)
 		user.GET("/list/messages", controllers.ListMessages)
 		user.GET("/upload-avatar", controllers.UploadAvator)
+	}
+}
+
+func CourseRouter(base *gin.RouterGroup) {
+	course := base.Group("/course")
+	{
+		course.POST("/new", controllers.NotImplemented)
+		course.GET("/lists", controllers.NotImplemented)
+		course.PUT("/update/:course_id", controllers.NotImplemented)
+		course.DELETE("/delete/:course_id", controllers.NotImplemented)
+
+		course.GET("/search/:keyword", controllers.NotImplemented)
 	}
 }
