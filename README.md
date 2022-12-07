@@ -72,3 +72,6 @@ adminMailboxPassword = os.Getenv("ADMIN_MAILBOX_PASSWORD")
 		adminMailboxPassword = string(password)
 	}
 ```
+
+## Add Yaml config file
+Even we have the conf/app.yaml configration file , it only for golang server. For frontend the .env still required.

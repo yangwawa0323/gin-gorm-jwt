@@ -1,14 +1,13 @@
 package models
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	"golang.org/x/term"
 	"gopkg.in/gomail.v2"
 )
 
@@ -33,28 +32,32 @@ func NewMailDialer(subject, body string, user User) *MailDialer {
 	}
 }
 
-func init() {
-	utils.LoadDotEnv()
-	adminEmail = os.Getenv("ADMIN_EMAIL")
+func Init() {
+	// utils.LoadDotEnv()
+	config := utils.InitConfig()
+	adminEmail = config.Mailbox.AdminEmail
 
-	adminMailboxPassword = os.Getenv("ADMIN_MAILBOX_PASSWORD")
+	adminMailboxPassword = config.Mailbox.AdminPassword
 	if strings.Compare(adminMailboxPassword, "") == 0 {
-		fmt.Printf("\nEnter admin mail box password\n\n")
-		reader := bufio.NewReader(os.Stdin)
-		password, _, err := reader.ReadLine()
+		fmt.Printf("\nEnter admin mail box password (no echo):\n\n")
+
+		// reader := bufio.NewReader(os.Stdin)
+		// password, _, err := reader.ReadLine()
+
+		bytePassword, err := term.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
 			log.Panic(err)
 			return
 		}
-		adminMailboxPassword = string(password)
+		adminMailboxPassword = string(bytePassword)
 	}
-	mailboxHost = os.Getenv("MAILBOX_HOST")
-	mailPort := os.Getenv("MAILBOX_PORT")
-	mailboxPort, _ = strconv.Atoi(mailPort)
+	mailboxHost = config.Mailbox.Host
+	mailboxPort = int(config.Mailbox.Port)
+	// mailboxPort, _ = strconv.Atoi(mailPort)
 }
 
 func (req *MailDialer) SendMail_gomailV2() error {
-
+	Init()
 	mail := gomail.NewMessage()
 	mail.SetHeader("From", adminEmail)
 
