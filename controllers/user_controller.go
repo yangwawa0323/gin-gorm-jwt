@@ -17,6 +17,12 @@ import (
 var debug = utils.Debug
 var errorDebug = utils.ErrorDebug
 
+// RegisterUser func has three steps
+// 1. save the user to DB
+// 2. send a activate mail
+// 3. generate a JWT token
+// finally. return the JSON response
+// Testing at 2022-12-08 12:45AM
 func RegisterUser(ctx *gin.Context) {
 	var user models.User
 
@@ -36,17 +42,31 @@ func RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	var saved chan bool = make(chan bool)
-	var sent chan bool = make(chan bool)
+	// Save new user
+	usersvc := services.NewUserService(&user)
+	user.UserClass = models.Guest // new user by default is a **guest**
+	result := usersvc.New(&user)
 
+	if result != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": result.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+
+	var sendMail = make(chan error, 1)
+	var generateJWT = make(chan error, 1)
+	// send a activate mail
 	go func() {
-		// TODO : send a activate mail
-		<-saved
+		debug("Next step: send a activate mail.")
 		body, err := user.GenerateActivateMailBody()
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
+			ctx.Abort()
+			return
 		}
 
 		mailDialer := models.NewMailDialer(
@@ -54,32 +74,19 @@ func RegisterUser(ctx *gin.Context) {
 			body,
 			user,
 		)
-		sent <- mailDialer.SendMail_gomailV2() == nil
-
+		sendMail <- mailDialer.SendMail_gomailV2()
 	}()
 
 	go func() {
-
-		usersvc := services.NewUserService(&user)
-		user.UserClass = models.Guest // new user by default is a **guest**
-		result := usersvc.New(&user)
-		if result != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": result.Error(),
-			})
-			ctx.Abort()
-			return
-		}
-
-		saved <- result == nil
-	}()
-
-	if <-sent {
-		token, err := auth.GenerateJWT(user.Email, user.Username)
+		debug("Finally generate JWT")
+		token, err := auth.GenerateJWT(&user)
+		generateJWT <- err
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
+			ctx.Abort()
+			return
 		}
 		ctx.JSON(http.StatusCreated, gin.H{
 			"userId":   user.ID,
@@ -87,13 +94,14 @@ func RegisterUser(ctx *gin.Context) {
 			"username": user.Username,
 			"token":    token,
 		})
-	} else {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "fail to send user the activate mail",
-		})
+	}()
+
+	if <-sendMail != nil || <-generateJWT != nil {
+		debug("Send mail or generate JWT failed !")
 	}
 }
 
+// TODO: testing
 func ConfirmMailActivate(ctx *gin.Context) {
 	type Secret struct {
 		Token string `form:"token"`
@@ -124,6 +132,7 @@ func ConfirmMailActivate(ctx *gin.Context) {
 	}
 }
 
+// TODO: not implemented yet
 func UploadAvator(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "upload avator",
@@ -136,6 +145,7 @@ func ChangePassword(ctx *gin.Context) {
 	})
 }
 
+// TODO: check JWT token valid
 func Login(ctx *gin.Context) {
 	var user models.User = models.User{}
 	if err := ctx.ShouldBind(&user); err != nil {
@@ -149,8 +159,10 @@ func Login(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": "user not found",
 			})
+			return
 		}
 	}
+	// TODO: GernateToken for this user.
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "user login",
 	})
@@ -160,4 +172,10 @@ func ListMessages(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "list messages",
 	})
+}
+
+func GetUserInfoFromCookie(ctx *gin.Context) *models.User {
+	// ctx.Cookie()
+	debug("Not implemented yet")
+	return nil
 }
