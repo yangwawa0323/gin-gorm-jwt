@@ -7,8 +7,11 @@ import (
 	"strconv"
 	"strings"
 
+	myerr "github.com/yangwawa0323/gin-gorm-jwt/utils/errors"
 	"gopkg.in/yaml.v3"
 )
+
+var Errors = myerr.Errors
 
 func isNotSetOrEmpty(value string) bool {
 	return strings.Compare("", value) == 0
@@ -18,7 +21,7 @@ func GetCertFiles(conf *InitYamlConfig) (cert string, key string) {
 	cert = conf.Certs.CertFile
 	key = conf.Certs.KeyFile
 	if !IsExists(cert) || !IsExists(key) {
-		panic(Errors[KeyFileNotExists])
+		panic(Errors[myerr.KeyFileNotExists])
 	}
 	return
 }
@@ -42,7 +45,7 @@ func GetConnectURI() string {
 	if isNotSetOrEmpty(dbuser) || isNotSetOrEmpty(dbpass) ||
 		isNotSetOrEmpty(dbhost) || isNotSetOrEmpty(strconv.Itoa(int(dbport))) ||
 		isNotSetOrEmpty(dbname) {
-		ErrorDebug(errors.New(Errors[PanicConfigFile]))
+		ErrorDebug(errors.New(Errors[myerr.PanicConfigFile]))
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
@@ -97,6 +100,11 @@ type certs struct {
 	KeyFile  string `yaml:"key_file"`
 }
 
+type qiniu struct {
+	AccessKey string `yaml:"access_key"`
+	SecretKey string `yaml:"secret_key"`
+}
+
 type InitYamlConfig struct {
 	Database database `yaml:"database"`
 	CORS     cors     `yaml:"cors,omitempty"`
@@ -104,6 +112,7 @@ type InitYamlConfig struct {
 	Mailbox  mailbox  `yaml:"mailbox,omitempty"`
 	Server   server   `yaml:"server,omitempty"`
 	Certs    certs    `yaml:"certs"`
+	Qiniu    qiniu    `yaml:"qiniu"`
 }
 
 // end of config structure.
@@ -112,13 +121,13 @@ func InitConfig() *InitYamlConfig {
 	config := &InitYamlConfig{}
 	confFile, err := os.ReadFile("conf/app.yaml")
 	if err != nil {
-		ErrorDebug(err, Errors[FileNotExist])
-		panic(fmt.Sprintf("%s :[%s]", Errors[FileNotExist], "conf/app.yaml"))
+		ErrorDebug(err, Errors[myerr.FileNotExist])
+		panic(fmt.Sprintf("%s :[%s]", Errors[myerr.FileNotExist], "conf/app.yaml"))
 	}
 
 	if err := yaml.Unmarshal(confFile, config); err != nil {
-		ErrorDebug(err, Errors[UnmarshalWrong], "conf/app.yaml")
-		panic(Errors[UnmarshalWrong])
+		ErrorDebug(err, Errors[myerr.UnmarshalWrong], "conf/app.yaml")
+		panic(Errors[myerr.UnmarshalWrong])
 	}
 
 	// Debug(fmt.Sprintf("%#v", config))

@@ -1,4 +1,4 @@
-package utils
+package errors
 
 type ErrorUint16 uint16
 
@@ -14,6 +14,8 @@ const (
 
 	NoMorePages
 	FileNotExist
+	OpenFileError
+	AppendFileError
 	UnmarshalWrong
 
 	CertFileNotExists
@@ -21,6 +23,8 @@ const (
 
 	UserNotExists
 	UserAlreadyExists
+	UploadAvatarError
+	BadPassword
 	EmailFormatInvalid
 	PictureFormatInvalid
 	NotAcceptAttachment
@@ -31,6 +35,7 @@ const (
 
 	TokenIsInvalid
 	ParseClaimError
+	UnexpectedSigningMethod
 	GenerateTokenError
 	TokenHasExpired
 
@@ -53,24 +58,29 @@ var Errors = map[ErrorUint16]string{
 	DataIsTooLong:     "the data is too loooooong",
 	NoMorePages:       "this is the last page, no more pages",
 	FileNotExist:      "file is not exists",
+	OpenFileError:     "file cannot opened",
+	AppendFileError:   "file cannot appended",
 	UnmarshalWrong:    "the file cannot unmarshaled",
 	CertFileNotExists: "the certification is not exists",
 	KeyFileNotExists:  "the key is not exists",
 
 	UserNotExists:        "user is not exist",
 	UserAlreadyExists:    "username or user mail is not unique",
+	UploadAvatarError:    "upload avatar failed",
+	BadPassword:          "user input password incorrect",
 	EmailFormatInvalid:   "user's email format is invalid",
 	PictureFormatInvalid: "the picture format is invalid",
 	NotAcceptAttachment:  "this is a not accpetted attachement",
 
-	UserIsNotLogIn:     "user is not log in",
-	CredentialError:    "wrong email/username or password",
-	HasNoPermission:    "you have no permission to access the resource",
-	TokenIsInvalid:     "Token string is invalid",
-	ParseClaimError:    "cloud not parse the claim from the token string",
-	GenerateTokenError: "cannot generate token",
-	TokenHasExpired:    "Token has expired, please login again",
-	AccessTimeOut:      "access time out",
+	UserIsNotLogIn:          "user is not log in",
+	CredentialError:         "wrong email/username or password",
+	HasNoPermission:         "you have no permission to access the resource",
+	TokenIsInvalid:          "Token string is invalid",
+	ParseClaimError:         "cloud not parse the claim from the token string",
+	UnexpectedSigningMethod: "unexpected signing method",
+	GenerateTokenError:      "cannot generate token",
+	TokenHasExpired:         "Token has expired, please login again",
+	AccessTimeOut:           "access time out",
 
 	BindPostDataError: "the engine can not bind user post data",
 	HasDirtyWord:      "has the dirty or sensitive word",

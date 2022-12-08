@@ -56,17 +56,15 @@ func PageRouter(base *gin.RouterGroup) {
 }
 
 func UserRouter(base *gin.RouterGroup) {
-	user := base.Group("/user")
+	user := base.Group("/user", middlewares.Auth())
 	{
-		user.POST("/register", controllers.Register)
 		// api/user/%d/activate-by-email?token=
 		user.GET("/:user_id/activate-by-email", controllers.ConfirmMailActivate)
-		user.POST("/login", controllers.Login)
 		user.PUT("/disable/:user_id")
 
 		user.POST("/change-password", controllers.ChangePassword)
 		user.GET("/list/messages", controllers.ListMessages)
-		user.GET("/upload-avatar", controllers.UploadAvator)
+		user.POST("/upload-avatar", controllers.UploadAvator)
 	}
 }
 

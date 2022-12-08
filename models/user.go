@@ -71,7 +71,7 @@ type User struct {
 	Username          string     `json:"username" gorm:"not null;type:varchar(100)"`
 	Email             string     `json:"email" gorm:"unique"`
 	Password          string     `json:"password" gorm:"type:varchar(255)"`
-	Phone             string     `json:"phone" gorm:"type:char;size:11"`
+	AvatarURL         string     `json:"avatar_url" gorm:"type:char;size:11"`
 	IdentityNumber    string     `json:"identity_number" gorm:"type:char;size:18"`
 	Privilege         Privilege  `json:"privilege" gorm:"type:tinyint"`
 	Gender            Gender     `json:"gender" gorm:"type:tinyint"`
@@ -81,7 +81,7 @@ type User struct {
 }
 
 func (user *User) HashPassword(password string) error {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}

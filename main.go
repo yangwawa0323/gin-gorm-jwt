@@ -15,6 +15,7 @@ import (
 	"github.com/yangwawa0323/gin-gorm-jwt/routers"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	myerr "github.com/yangwawa0323/gin-gorm-jwt/utils/errors"
 )
 
 //go:embed assets/*.ico
@@ -49,6 +50,8 @@ func main() {
 func initRouter() *gin.Engine {
 	router := gin.Default()
 
+	routers.RootRouter(router)
+
 	// Favicon
 	favFS := &routers.FavFS{
 		FS:     &embeddedFiles,
@@ -79,7 +82,7 @@ func gracefulHTTPServe(done chan os.Signal, port string, handler http.Handler) *
 			err != http.ErrServerClosed {
 
 			// TODO: to some clean things.
-			debug(utils.Errors[utils.ServicePortIsUsed], err.Error())
+			debug(myerr.Errors[myerr.ServicePortIsUsed], err.Error())
 		}
 	}()
 

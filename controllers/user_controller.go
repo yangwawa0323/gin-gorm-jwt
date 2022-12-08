@@ -18,8 +18,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yangwawa0323/gin-gorm-jwt/auth"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
+	"github.com/yangwawa0323/gin-gorm-jwt/models/audit"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	myerr "github.com/yangwawa0323/gin-gorm-jwt/utils/errors"
+	"github.com/yangwawa0323/gin-gorm-jwt/utils/info"
 	"gorm.io/gorm"
 )
 
@@ -111,6 +114,12 @@ func Register(ctx *gin.Context) {
 	if <-generateJWT != nil {
 		debug("failed to generate JWT")
 	}
+
+	audit.Log(fmt.Sprintf("%d %s [%s]",
+		user.ID,
+		user.Username,
+		info.Infos[info.Register],
+	))
 }
 
 // TODO: testing
@@ -138,14 +147,27 @@ func ConfirmMailActivate(ctx *gin.Context) {
 		} else {
 			debug("[DEBUG]: activate token is invalid")
 			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": Errors[utils.TokenHasExpired],
+				"error": Errors[myerr.TokenHasExpired],
 			})
 		}
 	}
 }
 
+type UploadAvatar struct {
+	Avatar []byte `json:"avatar" form:"avatar"`
+}
+
 // TODO: not implemented yet
 func UploadAvator(ctx *gin.Context) {
+	// var uploadAvatar UploadAvatar
+	file, err := ctx.FormFile("avatar")
+	if err != nil || utils.QiniuUpload(file) != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": Errors[myerr.UploadAvatarError],
+		})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "upload avator",
 	})
@@ -165,29 +187,43 @@ func Login(ctx *gin.Context) {
 
 	// Method 1. authenticate user by token
 	tokenString := auth.ExtractTokenString(ctx)
-	claim, err := auth.ExtractTokenClaim(tokenString) // It returns jwt.MapClaim
-	debug(fmt.Sprintf("%#v", claim))
+	claim, err := auth.ParseClaim(tokenString) // It returns jwt.MapClaim
+	// debug(fmt.Sprintf("%#v %#v", claim, err))
 	if err == nil {
 		ctx.JSON(http.StatusOK, gin.H{
-			"username": claim["username"],
-			"email":    claim["email"],
-			"user_id":  claim["user_id"],
-			"expireAt": claim["exp"],
+			"username": claim.Username,
+			"email":    claim.Email,
+			"user_id":  claim.UserID,
+			"expireAt": claim.ExpiresAt,
 		})
+		audit.Log(fmt.Sprintf("%d %s [%s]",
+			claim.UserID,
+			claim.Username,
+			info.Infos[info.Login],
+		))
 	} else {
 		// Method 2. authenticate user by form data.
 		var user models.User = models.User{}
 		if err := ctx.ShouldBind(&user); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, &user)
+			ctx.AbortWithStatus(http.StatusBadRequest)
 			return
 		} else {
 			usersvc := services.NewUserService(&user)
-			result := usersvc.DB.Where("name = ? and password = ?",
-				usersvc.User.Name,
-				usersvc.User.Password).First(&user)
+			userInputPassword := user.Password // read from post data
+			result := usersvc.DB.Where("email = ? or username = ?",
+				user.Email,
+				user.Username,
+			).First(&user)
+
 			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 				ctx.JSON(http.StatusNotFound, gin.H{
-					"error": Errors[utils.UserNotExists],
+					"error": Errors[myerr.UserNotExists],
+				})
+				return
+			}
+			if passErr := user.CheckPassword(userInputPassword); passErr != nil {
+				ctx.JSON(http.StatusBadRequest, gin.H{
+					"error": Errors[myerr.BadPassword],
 				})
 				return
 			}
@@ -199,9 +235,15 @@ func Login(ctx *gin.Context) {
 			return
 		}
 		ctx.JSON(http.StatusOK, gin.H{
-			"message": "user has logged in",
+			"message": info.Infos[info.Login],
 			"token":   tokenString,
 		})
+
+		audit.Log(fmt.Sprintf("%d %s [%s]",
+			user.ID,
+			user.Username,
+			info.Infos[info.Login],
+		))
 	}
 }
 

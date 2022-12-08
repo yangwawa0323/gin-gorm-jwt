@@ -9,6 +9,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/joho/godotenv v1.4.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/qiniu/go-sdk/v7 v7.14.0
 	golang.org/x/crypto v0.2.0
 	golang.org/x/oauth2 v0.2.0
 	golang.org/x/term v0.2.0
@@ -35,6 +36,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

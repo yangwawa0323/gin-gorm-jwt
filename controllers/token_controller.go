@@ -7,11 +7,11 @@ import (
 	"github.com/yangwawa0323/gin-gorm-jwt/auth"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
-	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	myerr "github.com/yangwawa0323/gin-gorm-jwt/utils/errors"
 	"gorm.io/gorm"
 )
 
-var Errors = utils.Errors
+var Errors = myerr.Errors
 
 type TokenRequest struct {
 	Email    string `json:"email"`
@@ -23,7 +23,7 @@ func GenerateToken(ctx *gin.Context) {
 	var user models.User
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": Errors[utils.BindPostDataError],
+			"error": Errors[myerr.BindPostDataError],
 		})
 		ctx.Abort()
 		return
@@ -34,7 +34,7 @@ func GenerateToken(ctx *gin.Context) {
 	record := dbsvc.DB.Where("email = ?", request.Email).First(&user)
 	if record.Error != nil || record.Error == gorm.ErrRecordNotFound {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": Errors[utils.ErrRecordNotFound],
+			"error": Errors[myerr.ErrRecordNotFound],
 		})
 		ctx.Abort()
 		return
@@ -42,7 +42,7 @@ func GenerateToken(ctx *gin.Context) {
 	credentialError := user.CheckPassword(request.Password)
 	if credentialError != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"error": Errors[utils.CredentialError],
+			"error": Errors[myerr.CredentialError],
 		})
 		ctx.Abort()
 		return
@@ -53,7 +53,7 @@ func GenerateToken(ctx *gin.Context) {
 	tokenString, err := auth.GenerateToken(&user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": Errors[utils.GenerateTokenError],
+			"error": Errors[myerr.GenerateTokenError],
 		})
 		ctx.Abort()
 		return

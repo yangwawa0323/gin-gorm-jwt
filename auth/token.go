@@ -10,15 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/utils"
+	myerr "github.com/yangwawa0323/gin-gorm-jwt/utils/errors"
 )
 
 var debug = utils.Debug
-var Errors = utils.Errors
+var Errors = myerr.Errors
 
 type JWTClaim struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	UserID   uint   `json:"user_id"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	UserID    uint   `json:"user_id"`
+	AvatarURL string `json:"avatar_url"`
 	jwt.StandardClaims
 }
 
@@ -29,9 +31,10 @@ var jwtkey = []byte("superscretkey")
 func GenerateToken(user *models.User) (tokenString string, err error) {
 	expiresAt := time.Now().Add(3 * time.Hour)
 	claims := &JWTClaim{
-		Email:    user.Email,
-		Username: user.Username,
-		UserID:   user.ID,
+		Email:     user.Email,
+		Username:  user.Username,
+		UserID:    user.ID,
+		AvatarURL: user.AvatarURL,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt.Unix(),
 		},
@@ -41,16 +44,22 @@ func GenerateToken(user *models.User) (tokenString string, err error) {
 	return
 }
 
-func ValidateToken(signedToken string) (err error) {
+// func ValidateToken(signedToken string) bool {
+// 	claim, err := ParseClaim(signedToken)
+// 	debug(signedToken)
+// 	debug(fmt.Sprintf("%#v", claim))
+// 	return err == nil
+// }
+
+func ParseClaim(signedToken string) (claims *JWTClaim, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&JWTClaim{},
-		// func(token *jwt.Token) (interface{}, error) {
-		// 	return []byte(jwtkey), nil
-		// },
+		// Callback func to get jwt secret key
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				return nil, fmt.Errorf("%s %v", Errors[myerr.UnexpectedSigningMethod],
+					token.Header["alg"])
 			}
 			return jwtkey, nil
 		},
@@ -58,19 +67,21 @@ func ValidateToken(signedToken string) (err error) {
 	if err != nil {
 		return
 	}
-	claims, ok := token.Claims.(jwt.MapClaims) //
+	var ok bool
+	claims, ok = token.Claims.(*JWTClaim) //
+	// debug(fmt.Sprintf("%#v: %#v", token.Claims, claims))
 	if !ok {
-		err = errors.New(Errors[utils.ParseClaimError])
+		err = errors.New(Errors[myerr.ParseClaimError])
 		return
 	}
-	if claims["exp"].(int64) < time.Now().Local().Unix() {
-		err = errors.New(Errors[utils.TokenHasExpired])
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		err = errors.New(Errors[myerr.TokenHasExpired])
 		return
 	}
 	return
 }
 
-// ExtractTokenString: extract token string from user request context
+// ExtractTokenString: extract token signed string from user request context
 func ExtractTokenString(ctx *gin.Context) string {
 	token := ctx.Query("token")
 	if token != "" {
@@ -87,8 +98,8 @@ func ExtractTokenString(ctx *gin.Context) string {
 }
 
 // ExtractTokenFromString: generate token from given token string
-func ExtractTokenFromString(tokenString string) (*jwt.Token, error) {
-	token, err := jwt.Parse(tokenString,
+func ExtractTokenFromString(signedString string) (*jwt.Token, error) {
+	token, err := jwt.Parse(signedString,
 		func(token *jwt.Token) (interface{}, error) {
 			// if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			// return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -98,25 +109,10 @@ func ExtractTokenFromString(tokenString string) (*jwt.Token, error) {
 	if err == nil && token.Valid {
 		return token, nil
 	}
-	return nil, errors.New(Errors[utils.TokenIsInvalid])
+	return nil, errors.New(Errors[myerr.TokenIsInvalid])
 }
 
 // Extract the custom claim from token string
 // IMPORTANT: custom claim to json is ok, but the field name has been changed.
 // We cannot read the struct from token.Claims by type assetion, it only `nil` we got.
 // To resolve the problem , we has use jwt.MapClaims, by access the key/value.
-func ExtractTokenClaim(tokenString string) (jwt.MapClaims, error) {
-	if err := ValidateToken(tokenString); err != nil {
-		return nil, err
-	}
-	token, err := ExtractTokenFromString(tokenString)
-	if err != nil {
-		return nil, err
-	}
-	claim, ok := token.Claims.(jwt.MapClaims)
-	// debug(fmt.Sprintf("%#v", token.Claims))
-	if !ok {
-		return nil, errors.New(Errors[utils.ParseClaimError])
-	}
-	return claim, err
-}

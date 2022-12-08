@@ -3,12 +3,12 @@ package services
 import (
 	"time"
 
-	"github.com/yangwawa0323/gin-gorm-jwt/models"
+	"github.com/yangwawa0323/gin-gorm-jwt/models/audit"
 )
 
 type auditService struct {
 	*dbService
-	Audit *models.AuditLog
+	Audit *audit.AuditLog
 }
 
 func NewAuditService() *auditService {
@@ -18,7 +18,7 @@ func NewAuditService() *auditService {
 }
 
 func (adtsvc *auditService) New(ctn string) error {
-	adtsvc.Audit = &models.AuditLog{
+	adtsvc.Audit = &audit.AuditLog{
 		Content:   ctn,
 		Timestamp: time.Now(),
 	}
