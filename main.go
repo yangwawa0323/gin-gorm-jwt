@@ -20,7 +20,7 @@ import (
 //go:embed assets/*.ico
 var embeddedFiles embed.FS
 
-var errorDebug = utils.ErrorDebug
+// var errorDebug = utils.ErrorDebug
 var debug = utils.Debug
 
 func main() {
@@ -77,7 +77,9 @@ func gracefulHTTPServe(done chan os.Signal, port string, handler http.Handler) *
 		cert, key := utils.GetCertFiles(utils.InitConfig())
 		if err := srv.ListenAndServeTLS(cert, key); err != nil &&
 			err != http.ErrServerClosed {
-			debug("Listen %s\n", err.Error())
+
+			// TODO: to some clean things.
+			debug(utils.Errors[utils.ServicePortIsUsed], err.Error())
 		}
 	}()
 
@@ -85,7 +87,7 @@ func gracefulHTTPServe(done chan os.Signal, port string, handler http.Handler) *
 }
 
 func timeoutShutdown(srv *http.Server) {
-	debug("server stop...")
+	// debug("server stop...")
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
@@ -99,5 +101,5 @@ func timeoutShutdown(srv *http.Server) {
 	if err := srv.Shutdown(ctx); err != nil {
 		debug(fmt.Sprintf("server shutdown failed: %+v", err))
 	}
-	debug("server exited properly")
+	// debug("server exited properly")
 }

@@ -1,7 +1,16 @@
+/**
+*   IMPORTANT!!!
+*   You can generate token from customized claim, but you `CANNOT` get the struct from token string,
+*   because the **jwt.NewWithClaims** func that accordings the json tag to generate the token string
+*   that cause all the field name is diffrence against the custom claim struct's.
+*   There is a way to get data by type assetion to **jwt.MapClaim**, and use key/value to get the data.
+ */
+
 package controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -23,7 +32,7 @@ var errorDebug = utils.ErrorDebug
 // 3. generate a JWT token
 // finally. return the JSON response
 // Testing at 2022-12-08 12:45AM
-func RegisterUser(ctx *gin.Context) {
+func Register(ctx *gin.Context) {
 	var user models.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
@@ -79,7 +88,7 @@ func RegisterUser(ctx *gin.Context) {
 
 	go func() {
 		debug("Finally generate JWT")
-		token, err := auth.GenerateJWT(&user)
+		token, err := auth.GenerateToken(&user)
 		generateJWT <- err
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
@@ -96,8 +105,11 @@ func RegisterUser(ctx *gin.Context) {
 		})
 	}()
 
-	if <-sendMail != nil || <-generateJWT != nil {
-		debug("Send mail or generate JWT failed !")
+	if <-sendMail != nil {
+		debug("failed to send email")
+	}
+	if <-generateJWT != nil {
+		debug("failed to generate JWT")
 	}
 }
 
@@ -126,7 +138,7 @@ func ConfirmMailActivate(ctx *gin.Context) {
 		} else {
 			debug("[DEBUG]: activate token is invalid")
 			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": "invalid token to activate your account or has expired",
+				"error": Errors[utils.TokenHasExpired],
 			})
 		}
 	}
@@ -139,6 +151,7 @@ func UploadAvator(ctx *gin.Context) {
 	})
 }
 
+// TODO: not implemented yet
 func ChangePassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "change passwod",
@@ -146,34 +159,60 @@ func ChangePassword(ctx *gin.Context) {
 }
 
 // TODO: check JWT token valid
+// 1. User never login or token has expired
+// 2. User has token and valid.
 func Login(ctx *gin.Context) {
-	var user models.User = models.User{}
-	if err := ctx.ShouldBind(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, &user)
+
+	// Method 1. authenticate user by token
+	tokenString := auth.ExtractTokenString(ctx)
+	claim, err := auth.ExtractTokenClaim(tokenString) // It returns jwt.MapClaim
+	debug(fmt.Sprintf("%#v", claim))
+	if err == nil {
+		ctx.JSON(http.StatusOK, gin.H{
+			"username": claim["username"],
+			"email":    claim["email"],
+			"user_id":  claim["user_id"],
+			"expireAt": claim["exp"],
+		})
 	} else {
-		usersvc := services.NewUserService(&user)
-		result := usersvc.DB.Where("name = ? and password = ?",
-			usersvc.User.Name,
-			usersvc.User.Password).First(&user)
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": "user not found",
-			})
+		// Method 2. authenticate user by form data.
+		var user models.User = models.User{}
+		if err := ctx.ShouldBind(&user); err != nil {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, &user)
+			return
+		} else {
+			usersvc := services.NewUserService(&user)
+			result := usersvc.DB.Where("name = ? and password = ?",
+				usersvc.User.Name,
+				usersvc.User.Password).First(&user)
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				ctx.JSON(http.StatusNotFound, gin.H{
+					"error": Errors[utils.UserNotExists],
+				})
+				return
+			}
+		}
+		// TODO: GernateToken for this user.
+		tokenString, err := auth.GenerateToken(&user)
+		if err != nil {
+			ctx.AbortWithError(500, err)
 			return
 		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"message": "user has logged in",
+			"token":   tokenString,
+		})
 	}
-	// TODO: GernateToken for this user.
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "user login",
-	})
 }
 
+// TODO: not implemented yet
 func ListMessages(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "list messages",
 	})
 }
 
+// TODO: not implemented yet
 func GetUserInfoFromCookie(ctx *gin.Context) *models.User {
 	// ctx.Cookie()
 	debug("Not implemented yet")

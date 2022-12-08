@@ -58,13 +58,14 @@ func AllPages(ctx *gin.Context) {
 
 func NotImplemented(ctx *gin.Context) {
 	ctx.Status(200)
-	user_id, err := auth.ExtractTokenUserID(ctx)
-	if err != nil {
-		debug(err.Error())
-	}
 
 	message := "<h1>Not implemented yet</h1>"
-	message += fmt.Sprintf("<h4>welcome %d</h4>", user_id)
+
+	claim, err := auth.ExtractTokenClaim(auth.ExtractTokenString(ctx))
+	if err == nil {
+		debug(err.Error())
+		message += fmt.Sprintf("<h4>welcome %s</h4>", claim["username"])
+	}
 	message += fmt.Sprintf("<span>%s</span>", time.Now().Format("2006-01-02 15:04:05"))
 	ctx.Writer.WriteString(message)
 }

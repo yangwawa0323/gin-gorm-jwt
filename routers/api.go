@@ -58,7 +58,7 @@ func PageRouter(base *gin.RouterGroup) {
 func UserRouter(base *gin.RouterGroup) {
 	user := base.Group("/user")
 	{
-		user.POST("/register", controllers.RegisterUser)
+		user.POST("/register", controllers.Register)
 		// api/user/%d/activate-by-email?token=
 		user.GET("/:user_id/activate-by-email", controllers.ConfirmMailActivate)
 		user.POST("/login", controllers.Login)

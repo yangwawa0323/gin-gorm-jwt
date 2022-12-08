@@ -18,8 +18,7 @@ func GetCertFiles(conf *InitYamlConfig) (cert string, key string) {
 	cert = conf.Certs.CertFile
 	key = conf.Certs.KeyFile
 	if !IsExists(cert) || !IsExists(key) {
-		Debug("the cert and key file is not exists")
-		panic("")
+		panic(Errors[KeyFileNotExists])
 	}
 	return
 }
@@ -43,7 +42,7 @@ func GetConnectURI() string {
 	if isNotSetOrEmpty(dbuser) || isNotSetOrEmpty(dbpass) ||
 		isNotSetOrEmpty(dbhost) || isNotSetOrEmpty(strconv.Itoa(int(dbport))) ||
 		isNotSetOrEmpty(dbname) {
-		ErrorDebug(errors.New("please set conf/app.yaml file to correct"))
+		ErrorDebug(errors.New(Errors[PanicConfigFile]))
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
@@ -113,13 +112,13 @@ func InitConfig() *InitYamlConfig {
 	config := &InitYamlConfig{}
 	confFile, err := os.ReadFile("conf/app.yaml")
 	if err != nil {
-		ErrorDebug(err, "cannot load conf/app.yaml")
-		panic("cannot load conf/app.yaml")
+		ErrorDebug(err, Errors[FileNotExist])
+		panic(fmt.Sprintf("%s :[%s]", Errors[FileNotExist], "conf/app.yaml"))
 	}
 
 	if err := yaml.Unmarshal(confFile, config); err != nil {
-		ErrorDebug(err, "can not unmarshal the conf/app.yaml")
-		panic("cannot parse configuration")
+		ErrorDebug(err, Errors[UnmarshalWrong], "conf/app.yaml")
+		panic(Errors[UnmarshalWrong])
 	}
 
 	// Debug(fmt.Sprintf("%#v", config))
