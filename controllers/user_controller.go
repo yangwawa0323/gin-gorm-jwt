@@ -161,7 +161,15 @@ type UploadAvatar struct {
 func UploadAvator(ctx *gin.Context) {
 	// var uploadAvatar UploadAvatar
 	file, err := ctx.FormFile("avatar")
-	if err != nil || utils.QiniuUpload(file) != nil {
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": Errors[myerr.UploadAvatarError],
+		})
+		return
+	}
+	avatar, err := utils.QiniuUpload(file)
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"message": Errors[myerr.UploadAvatarError],
 		})
@@ -170,6 +178,7 @@ func UploadAvator(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "upload avator",
+		"avatar":  avatar,
 	})
 }
 

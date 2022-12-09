@@ -3,6 +3,8 @@ package utils
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -16,6 +18,8 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 )
+
+const QiniuUrl = "http://img.51cloudclass.com"
 
 func ErrorDebug(err error, message ...string) error {
 
@@ -65,13 +69,34 @@ type MyPutRet struct {
 	Name   string
 }
 
-func QiniuUpload(fileHeader *multipart.FileHeader) error {
+func GetFileExt(filename string) string {
+	pos := strings.LastIndex(filename, ".")
+	if pos == -1 {
+		return "unknown"
+	}
+	return filename[pos+1:]
+}
+
+func HashString(content []byte) string {
+	alg := md5.New()
+	alg.Write(content)
+
+	return fmt.Sprintf("%x", alg.Sum(nil))
+}
+
+func FullLink(rel string) string {
+	return fmt.Sprintf("%s/%s", QiniuUrl, rel)
+}
+
+func QiniuUpload(fileHeader *multipart.FileHeader) (string, error) {
 
 	conf := InitConfig()
 	accessKey := conf.Qiniu.AccessKey
 	secretKey := conf.Qiniu.SecretKey
 
 	bucket := "51cloudclass"
+	baseDir := "avatar"
+	ext := GetFileExt(fileHeader.Filename)
 
 	putPolicy := storage.PutPolicy{
 		Scope:      bucket,
@@ -79,7 +104,6 @@ func QiniuUpload(fileHeader *multipart.FileHeader) error {
 	}
 	mac := qbox.NewMac(accessKey, secretKey)
 	upToken := putPolicy.UploadToken(mac)
-	Debug(upToken)
 
 	cfg := storage.Config{}
 	formUploader := storage.NewFormUploader(&cfg)
@@ -94,19 +118,29 @@ func QiniuUpload(fileHeader *multipart.FileHeader) error {
 	var data []byte
 	file, err := fileHeader.Open()
 	if err != nil {
-		return err
+		return "", err
 	}
 	data, err = io.ReadAll(file)
 	if err != nil {
-		return err
+		return "", err
 	}
 
+	remotePath := fmt.Sprintf("%s/%s.%s",
+		baseDir,
+		HashString(data),
+		ext)
+
 	dataLen := int64(len(data))
-	err = formUploader.Put(context.Background(), &ret, upToken, accessKey, bytes.NewReader(data), dataLen, &putExtra)
+	err = formUploader.Put(context.Background(),
+		&ret,
+		upToken,
+		remotePath,
+		bytes.NewReader(data),
+		dataLen,
+		&putExtra)
 	if err != nil {
 		ErrorDebug(err)
-		return err
+		return "", err
 	}
-	Debug("Qiniu upload result:", ret.Key, ret.Hash)
-	return nil
+	return FullLink(remotePath), nil
 }

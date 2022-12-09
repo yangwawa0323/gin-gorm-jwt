@@ -46,6 +46,8 @@ const (
 	PostTooFast
 
 	ErrRecordNotFound
+
+	HashMarshalError
 )
 
 var Errors = map[ErrorUint16]string{
@@ -87,4 +89,6 @@ var Errors = map[ErrorUint16]string{
 	PostTooFast:       "you are post too fast, please wait a moment and try again",
 
 	ErrRecordNotFound: "the record is not found",
+
+	HashMarshalError: "Hash marshal string error",
 }
