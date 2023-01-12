@@ -15,10 +15,10 @@ func ApiRouter(router *gin.Engine) {
 	{
 		api.POST("/token", controllers.GenerateToken)
 		// api.POST("/user/register", controllers.RegisterUser)
-		// api/user/%d/activate-by-email?token=
+		// api/user/activate-by-email/%d?token=
 		secured := api.Group("/secured").Use(middlewares.Auth())
 		{
-			secured.GET("/ping", controllers.Ping)
+			secured.POST("/ping", controllers.Ping)
 		}
 		UserRouter(api)
 		PageRouter(api)
@@ -58,9 +58,11 @@ func PageRouter(base *gin.RouterGroup) {
 func UserRouter(base *gin.RouterGroup) {
 	user := base.Group("/user", middlewares.Auth())
 	{
-		// api/user/%d/activate-by-email?token=
-		user.GET("/:user_id/activate-by-email", controllers.ConfirmMailActivate)
+		// api/user/activate-by-email/%d?token=
+		user.GET("/activate-by-email/:user_id", controllers.ConfirmMailActivate)
 		user.PUT("/disable/:user_id")
+
+		user.GET("/profile/:name/:user_id", controllers.GetUserProfile)
 
 		user.POST("/change-password", controllers.ChangePassword)
 		user.GET("/list/messages", controllers.ListMessages)

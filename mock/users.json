@@ -1,0 +1,16 @@
+[
+	{
+		"user_id": 1,
+		"username": "yangwawa0323",
+		"avatar": "http://lorempic.org/abc.png",
+		"email": "yangwawa0323@163.com",
+		"password": "$2a$10$rtVsvkSZ7jaMM4NTTgGn8.01HGZ6yvLpByUz18nwI4I8pdpA/ZC4."
+	},
+	{
+		"user_id": 2,
+		"username": "Joe doe",
+		"avatar": "http://lorempic.org/efg.png",
+		"email": "joedoe@163.com",
+		"password": "$2a$10$rtVsvkSZ7jaMM4NTTgGn8.01HGZ6yvLpByUz18nwI4I8pdpA/ZC4."
+	}
+]

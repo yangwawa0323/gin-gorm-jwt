@@ -1,0 +1,361 @@
+basePath: /
+definitions:
+  controllers.RegisterResponse:
+    properties:
+      avatar_url:
+        example: https://picsum.photos/200/300?random=1
+        type: string
+      code:
+        example: 302
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      favorited_articles:
+        items:
+          $ref: '#/definitions/models.Article'
+        type: array
+      followee:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+      gender:
+        $ref: '#/definitions/models.Gender'
+      id:
+        type: integer
+      identity_number:
+        type: string
+      message:
+        example: message
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      privilege:
+        $ref: '#/definitions/models.Privilege'
+      token:
+        type: string
+      updatedAt:
+        type: string
+      user_class:
+        $ref: '#/definitions/models.UserClass'
+      username:
+        type: string
+    type: object
+  controllers.TokenRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  controllers.TokenResponse:
+    properties:
+      code:
+        example: 302
+        type: integer
+      message:
+        example: message
+        type: string
+      token:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  httputil.HTTPError:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: status bad request
+        type: string
+    type: object
+  models.Article:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      favorited:
+        type: integer
+      favorited_users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+      id:
+        type: integer
+      publishTime:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Gender:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - Famale
+    - Male
+    - Unclosed
+  models.Page:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      updatedAt:
+        type: string
+    required:
+    - content
+    type: object
+  models.Privilege:
+    enum:
+    - 1
+    - 2
+    - 4
+    - 8
+    - 16
+    - 32
+    - 64
+    - 127
+    type: integer
+    x-enum-varnames:
+    - Readable
+    - Writeable
+    - Deleteable
+    - Downloadable
+    - Uploadable
+    - ChangeUserClass
+    - Grant
+    - Admin
+  models.ResponseMessage:
+    properties:
+      code:
+        example: 302
+        type: integer
+      message:
+        example: message
+        type: string
+    type: object
+  models.User:
+    properties:
+      avatar_url:
+        example: https://picsum.photos/200/300?random=1
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      favorited_articles:
+        items:
+          $ref: '#/definitions/models.Article'
+        type: array
+      followee:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+      gender:
+        $ref: '#/definitions/models.Gender'
+      id:
+        type: integer
+      identity_number:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      privilege:
+        $ref: '#/definitions/models.Privilege'
+      updatedAt:
+        type: string
+      user_class:
+        $ref: '#/definitions/models.UserClass'
+      username:
+        type: string
+    type: object
+  models.UserClass:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - Guest
+    - MonthlySubscription
+    - AnnualSubscription
+    - Administrator
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a 51cloudclass.com web api server.
+  title: 51cloudclass Gin Swagger API
+  version: 1.0.0
+paths:
+  /api/page/all:
+    get:
+      consumes:
+      - application/json
+      description: List all pages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Page'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httputil.HTTPError'
+      summary: List all pages
+      tags:
+      - page
+  /api/page/new:
+    post:
+      consumes:
+      - application/json
+      description: Create a new page and post to server
+      parameters:
+      - description: Page with content
+        in: body
+        name: page
+        required: true
+        schema:
+          $ref: '#/definitions/models.Page'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseMessage'
+      summary: Post a new Page
+      tags:
+      - page
+  /api/secured/ping:
+    post:
+      consumes:
+      - application/json
+      description: Ping pong example, need the token authenticated
+      parameters:
+      - description: with the bearer stared
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseMessage'
+      summary: Ping pong
+      tags:
+      - authenticate
+  /api/token:
+    post:
+      consumes:
+      - application/json
+      description: Generate Token for the authenticated user.
+      parameters:
+      - description: email and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.TokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.TokenResponse'
+      summary: Generate Token
+      tags:
+      - authenticate
+  /example/helloworld:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: ping example
+      tags:
+      - example
+  /health:
+    get:
+      consumes:
+      - '*/*'
+      description: get the status of server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Show the status of server.
+      tags:
+      - root
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        1. save the user to DB
+        2. send a activate mail
+        3. generate a JWT token
+        finally. return the JSON response
+      parameters:
+      - description: User model
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.RegisterResponse'
+      summary: Save the user to DB
+      tags:
+      - authenticate
+schemes:
+- http
+swagger: "2.0"

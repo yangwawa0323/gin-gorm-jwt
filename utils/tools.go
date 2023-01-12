@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -143,4 +144,23 @@ func QiniuUpload(fileHeader *multipart.FileHeader) (string, error) {
 		return "", err
 	}
 	return FullLink(remotePath), nil
+}
+
+type jsonResult map[string]*json.RawMessage
+
+func ReadMockJson(filename string) (jsonResult, error) {
+	path, _ := os.Getwd()
+	Debug("current path", path)
+	if _, err := os.Stat(filename); err != nil {
+		return nil, ErrorDebug(err, filename, " is not exists")
+	}
+	jsonContent, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, ErrorDebug(err, "cannot read file", filename)
+	}
+
+	var objmap map[string]*json.RawMessage
+	err = json.Unmarshal(jsonContent, &objmap)
+	return objmap, err
+
 }

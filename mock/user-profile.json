@@ -1,0 +1,46 @@
+{
+	"user_id": 1,
+	"username": "Chad Cox",
+	"avatar": "http://lorempic.org/abc.png",
+	"gender": "female",
+	"age": 47,
+	"phone": "15828740283",
+	"wechat": "yangkun_0239",
+	"birth": "1998-02-11",
+	"intergral": 920,
+	"favoritor": 45,
+	"messages": {
+		"admin": 6,
+		"friend": 24
+	},
+	"favoritee": {
+		"total": 22,
+		"users": [
+			{
+				"user_id": 19,
+				"username": "Joe doe"
+			},
+			{
+				"user_id": 44,
+				"username": "Stebin Ben"
+			},
+			{
+				"user_id": 27,
+				"username": "Abbie Fields"
+			},
+			{
+				"user_id": 19,
+				"username": "Chad Cox"
+			},
+			{
+				"user_id": 56,
+				"username": "Charlie Campbell"
+			}
+		]
+	},
+	"posts": 142,
+	"address": {
+		"home": "长沙市韭菜园108号三栋903室",
+		"office": "长沙市芙蓉中路1020号华天大厦A座2808室"
+	}
+}

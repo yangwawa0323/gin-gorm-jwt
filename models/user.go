@@ -57,12 +57,14 @@ const (
 	Guest UserClass = iota
 	MonthlySubscription
 	AnnualSubscription
+	Administrator
 )
 
 var LiteralUserClass = map[int64]string{
 	int64(Guest):               "guest",
 	int64(MonthlySubscription): "monthly subscription user",
 	int64(AnnualSubscription):  "annual subscription user",
+	int64(Administrator):       "Administrator",
 }
 
 type User struct {
@@ -71,13 +73,13 @@ type User struct {
 	Username          string     `json:"username" gorm:"not null;type:varchar(100)"`
 	Email             string     `json:"email" gorm:"unique"`
 	Password          string     `json:"password" gorm:"type:varchar(255)"`
-	AvatarURL         string     `json:"avatar_url" gorm:"type:char;size:11"`
+	AvatarURL         string     `json:"avatar_url" gorm:"type:varchar(255)" example:"https://picsum.photos/200/300?random=1"`
 	IdentityNumber    string     `json:"identity_number" gorm:"type:char;size:18"`
 	Privilege         Privilege  `json:"privilege" gorm:"type:tinyint"`
 	Gender            Gender     `json:"gender" gorm:"type:tinyint"`
 	UserClass         UserClass  `json:"user_class" gorm:"type:tinyint"`
-	FavoritedArticles []*Article `gorm:"many2many:user_favorited"`
-	Followee          []*User    `gorm:"many2many:user_followee"`
+	FavoritedArticles []*Article `json:"favorited_articles" gorm:"many2many:user_favorited"`
+	Followee          []*User    `json:"followee" gorm:"many2many:user_followee"`
 }
 
 func (user *User) HashPassword(password string) error {
@@ -120,7 +122,7 @@ func (user *User) GenerateActivateMailBody() (string, error) {
 	// TODO: hard code here
 	srvHost := os.Getenv("SERVER_URL")
 	url :=
-		fmt.Sprintf("%s/api/user/%d/activate-by-email?token=%s",
+		fmt.Sprintf("%s/api/user/activate-by-email/%d?token=%s",
 			srvHost, user.ID,
 			url.QueryEscape(string(activateString)),
 		)

@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yangwawa0323/gin-gorm-jwt/auth"
+	"github.com/yangwawa0323/gin-gorm-jwt/httputil"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/models/audit"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
@@ -29,28 +30,40 @@ import (
 var debug = utils.Debug
 var errorDebug = utils.ErrorDebug
 
-// RegisterUser func has three steps
+type RegisterResponse struct {
+	models.ResponseMessage
+	models.User
+	Token string `json:"token"`
+}
+
+// RegisterUser func has three steps godoc
 // 1. save the user to DB
 // 2. send a activate mail
 // 3. generate a JWT token
 // finally. return the JSON response
 // Testing at 2022-12-08 12:45AM
+//
+//		@Summary		Save the user to DB
+//		@Description	1. save the user to DB
+//		@Description	2. send a activate mail
+//		@Description	3. generate a JWT token
+//		@Description	finally. return the JSON response
+//		@Tags			authenticate
+//		@Accept			json
+//		@Produce		json
+//		@Param			request	body	models.User		true	"User model"
+//		@Success		200 {object}	RegisterResponse
+//	 @Router			/register [post]
 func Register(ctx *gin.Context) {
 	var user models.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		ctx.Abort()
+		httputil.NewError(ctx, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := user.HashPassword(user.Password); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		ctx.Abort()
+		httputil.NewError(ctx, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -60,10 +73,7 @@ func Register(ctx *gin.Context) {
 	result := usersvc.New(&user)
 
 	if result != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": result.Error(),
-		})
-		ctx.Abort()
+		httputil.NewError(ctx, http.StatusInternalServerError, result)
 		return
 	}
 
@@ -71,22 +81,20 @@ func Register(ctx *gin.Context) {
 	var generateJWT = make(chan error, 1)
 	// send a activate mail
 	go func() {
-		debug("Next step: send a activate mail.")
-		body, err := user.GenerateActivateMailBody()
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			ctx.Abort()
-			return
-		}
+		// debug("Next step: send a activate mail.")
+		// body, err := user.GenerateActivateMailBody()
+		// if err != nil {
+		// 	httputil.NewError(ctx, http.StatusInternalServerError, err)
+		// 	return
+		// }
 
-		mailDialer := models.NewMailDialer(
-			"Welcome to register 51cloudclass website",
-			body,
-			user,
-		)
-		sendMail <- mailDialer.SendMail_gomailV2()
+		// mailDialer := models.NewMailDialer(
+		// 	"Welcome to register 51cloudclass website",
+		// 	body,
+		// 	user,
+		// )
+		// sendMail <- mailDialer.SendMail_gomailV2()
+		sendMail <- nil
 	}()
 
 	go func() {
@@ -94,17 +102,17 @@ func Register(ctx *gin.Context) {
 		token, err := auth.GenerateToken(&user)
 		generateJWT <- err
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-			ctx.Abort()
+			httputil.NewError(ctx, http.StatusBadRequest, err)
 			return
 		}
-		ctx.JSON(http.StatusCreated, gin.H{
-			"userId":   user.ID,
-			"email":    user.Email,
-			"username": user.Username,
-			"token":    token,
+
+		ctx.JSON(http.StatusCreated, RegisterResponse{
+			models.ResponseMessage{
+				Code:    http.StatusCreated,
+				Message: "User register successfully.",
+			},
+			user,
+			token,
 		})
 	}()
 
@@ -192,12 +200,13 @@ func ChangePassword(ctx *gin.Context) {
 // TODO: check JWT token valid
 // 1. User never login or token has expired
 // 2. User has token and valid.
-func Login(ctx *gin.Context) {
 
+func Login(ctx *gin.Context) {
+	debug("Log in...")
 	// Method 1. authenticate user by token
 	tokenString := auth.ExtractTokenString(ctx)
 	claim, err := auth.ParseClaim(tokenString) // It returns jwt.MapClaim
-	// debug(fmt.Sprintf("%#v %#v", claim, err))
+	debug(fmt.Sprintf("%#v %#v", claim, err))
 	if err == nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"username": claim.Username,
@@ -268,4 +277,29 @@ func GetUserInfoFromCookie(ctx *gin.Context) *models.User {
 	// ctx.Cookie()
 	debug("Not implemented yet")
 	return nil
+}
+
+type User struct {
+	ID   string `uri:"user_id" binding:"required"`
+	Name string `uri:"name" binding:"required"`
+}
+
+// 2023-01-06
+// route: "/user/profile/:name/:user_id"
+func GetUserProfile(ctx *gin.Context) {
+	var user User
+	if err := ctx.ShouldBindUri(&user); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "bind Uri failed, wrong parameters",
+		})
+		errorDebug(err, "bind Uri failed")
+		return
+	}
+
+	MockJsonResponse(ctx, "mock/user-profile.json")
+
+}
+
+func UpdateUserProfile(ctx *gin.Context) {
+	debug("Not implemented yet")
 }

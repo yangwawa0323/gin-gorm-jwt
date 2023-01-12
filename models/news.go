@@ -10,7 +10,7 @@ const (
 )
 
 type News struct {
-	gorm.Model
+	gorm.Model  `json:"-"`
 	Title       string   `json:"title"`
 	PublishTime string   `json:"publish_time"`
 	Creation    Creation `json:"creation" gorm:"type:tinyint"`

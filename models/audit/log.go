@@ -47,21 +47,17 @@ func (fs *FileStorage) Save(al *AuditLog) error {
 }
 
 type AuditLog struct {
-	gorm.Model
+	// gorm.Model
 	Timestamp time.Time `json:"timestamp"`
 	Content   string    `json:"content"`
 }
 
-func (al *AuditLog) Log(storage Storage) error {
-	return storage.Save(al)
-}
-
 func Log(message string) {
-	audit := AuditLog{
+	audit := &AuditLog{
 		Content: message,
 	}
 	fs := &FileStorage{
 		Filename: "audit.log",
 	}
-	audit.Log(fs)
+	fs.Save(audit)
 }

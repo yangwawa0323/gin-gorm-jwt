@@ -24,9 +24,15 @@ POST https://{{host}}/login HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{loginWithForm.response.body.$.token}}
 
+
+###
+// @name getUserProfile
+GET http://{{host}}/api/user/profile/yangwawa/75 HTTP/1.1
+Authorization: Bearer {{loginWithForm.response.body.$.token}}
+
 ###
 // @name loginWithForm
-POST https://{{host}}/login HTTP/1.1
+POST http://{{host}}/login HTTP/1.1
 Content-Type: application/json
 
 {
@@ -36,7 +42,7 @@ Content-Type: application/json
 }
 
 ## Please commit two time to detect the unique username and mail
-POST https://{{host}}/register HTTP/1.1
+POST http://{{host}}/register HTTP/1.1
 content-type: application/json
     
 {
@@ -51,13 +57,13 @@ content-type: application/json
 
 
 // @name uploadAvatar
-POST https://{{host}}/api/user/upload-avatar HTTP/1.1
+POST http://{{host}}/api/user/upload-avatar HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{loginWithForm.response.body.$.token}}
 
 ###
 
-POST https://{{host}}/api/user/upload-avatar HTTP/1.1
+POST http://{{host}}/api/user/upload-avatar HTTP/1.1
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary51cloudclass
 Authorization: Bearer {{loginWithForm.response.body.$.token}}
 
@@ -70,8 +76,8 @@ Content-Type: image/png
 
 ###
 
-GET https://{{host}}/api/user/25/activate-by-email?token=%242a%2410%24iuPizsiVSpehR6rmMCjt2uwFgA9kEUQWcwhYT6iBHTn3.r411fa7O
+GET https://{{host}}/api/user/activate-by-email/25?token=%242a%2410%24iuPizsiVSpehR6rmMCjt2uwFgA9kEUQWcwhYT6iBHTn3.r411fa7O
 
 ###
 
-GET https://localhost:8080/api/user/30/activate-by-email?token=%242a%2410%24je4qEzNg%2FF%2Fl83wpYuNPDufsuNVo9OtePfZuJPEgeQYmbwlOf8xrC
+GET https://localhost:8080/api/user/activate-by-email/30?token=%242a%2410%24je4qEzNg%2FF%2Fl83wpYuNPDufsuNVo9OtePfZuJPEgeQYmbwlOf8xrC

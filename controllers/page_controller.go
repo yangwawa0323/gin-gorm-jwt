@@ -7,20 +7,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/yangwawa0323/gin-gorm-jwt/auth"
+	"github.com/yangwawa0323/gin-gorm-jwt/httputil"
 	"github.com/yangwawa0323/gin-gorm-jwt/models"
 	"github.com/yangwawa0323/gin-gorm-jwt/services"
 )
 
+// NewPage godoc
+//
+//		@Summary		Post a new Page
+//		@Description	Create a new page and post to server
+//		@Tags			page
+//		@Accept			json
+//		@Produce		json
+//		@Param			page	body		models.Page	true	"Page with content"
+//		@Success		200 {object}	models.ResponseMessage
+//	 @Router			/api/page/new [post]
 func NewPage(ctx *gin.Context) {
-	var page *models.Page
+	var page models.Page
 	// TODO: should get user info and post database
 	// ctx.Header("Access-Control-Allow-Origin", "*")
 
-	if err := ctx.ShouldBindJSON(page); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		ctx.Abort()
+	if err := ctx.ShouldBindJSON(&page); err != nil {
+		httputil.NewError(ctx, http.StatusBadRequest, err)
 		return
 	}
 
@@ -28,23 +36,32 @@ func NewPage(ctx *gin.Context) {
 	// dbsvc := services.NewDBService()
 	// record := dbsvc.DB.Create(&page)
 
-	pgsvc := services.NewPageService(page)
+	pgsvc := services.NewPageService(&page)
 	// pgsvc.Page = &page
 	// TODO:
-	if err := pgsvc.New(page); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		ctx.Abort()
-		return
+	if err := pgsvc.New(&page); err != nil {
+		if err != nil {
+			httputil.NewError(ctx, http.StatusInternalServerError, err)
+			return
+		}
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Save the page content to database successfully.",
+	ctx.JSON(http.StatusOK, models.ResponseMessage{
+		Code:    http.StatusOK,
+		Message: "Save the page content to database successfully.",
 	})
 }
 
-// Get all page and format a json file
+// Get all page and format a json file godoc
+//
+//	@Summary		List all pages
+//	@Description	List all pages
+//	@Tags			page
+//	@Accept			json
+//	@Produce		json
+//	@Success		200 {array}		models.Page
+//	@Failure		400	{object}	httputil.HTTPError
+//	@Router			/api/page/all [get]
 func AllPages(ctx *gin.Context) {
 	var pages []models.Page
 
